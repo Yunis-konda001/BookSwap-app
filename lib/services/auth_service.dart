@@ -8,6 +8,18 @@ class AuthService {
 
   Future<void> signUp(String email, String password) async {
     await _auth.createUserWithEmailAndPassword(email: email, password: password);
+    await sendVerification();
+  }
+
+  Future<void> sendVerification() async {
+    final user = _auth.currentUser;
+    if (user != null && !user.emailVerified) {
+      await user.sendEmailVerification();
+    }
+  }
+
+  Future<void> reloadUser() async {
+    await _auth.currentUser?.reload();
   }
 
   Future<void> signIn(String email, String password) => _auth.signInWithEmailAndPassword(email: email, password: password);

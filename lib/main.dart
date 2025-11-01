@@ -8,6 +8,7 @@ import 'providers/book_provider.dart';
 import 'providers/chat_provider.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/signup_screen.dart';
+import 'screens/auth/verify_email_screen.dart';
 
 import 'screens/home/browse_listings.dart';
 import 'screens/home/my_listings.dart';
@@ -82,6 +83,8 @@ class _AuthGate extends StatelessWidget {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
         if (!snapshot.hasData) return const LoginScreen();
+        final user = auth.currentUser!;
+        if (!user.emailVerified) return const VerifyEmailScreen();
         return const MainNav();
       },
     );
