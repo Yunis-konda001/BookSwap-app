@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../providers/book_provider.dart';
+import '../../providers/notification_provider.dart';
 import '../../models/book.dart';
 import '../../widgets/book_card.dart';
+import '../../widgets/notification_badge.dart';
 import 'post_book_screen.dart';
 
 class MyListings extends StatelessWidget {
@@ -34,16 +36,28 @@ class MyListings extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final notifications = context.watch<NotificationProvider>();
+    
     return DefaultTabController(
       length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('My Listings'),
-          bottom: const TabBar(
+          bottom: TabBar(
             tabs: [
-              Tab(text: 'My Books'),
-              Tab(text: 'My Offers'),
-              Tab(text: 'Incoming'),
+              const Tab(text: 'My Books'),
+              Tab(
+                child: NotificationBadge(
+                  count: notifications.unreadMyOffers,
+                  child: const Text('My Offers'),
+                ),
+              ),
+              Tab(
+                child: NotificationBadge(
+                  count: notifications.unreadIncomingOffers,
+                  child: const Text('Incoming'),
+                ),
+              ),
             ],
           ),
         ),

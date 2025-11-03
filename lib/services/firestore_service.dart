@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
@@ -18,22 +19,9 @@ class FirestoreService {
       _db.collection('books').where('ownerId', isEqualTo: ownerId).snapshots();
 
   Future<String> uploadImage(XFile file, String ownerId) async {
-    try {
-      final id = const Uuid().v4();
-      final ref = _storage.ref('covers/$ownerId/$id.jpg');
-      final bytes = await file.readAsBytes();
-      
-      final metadata = SettableMetadata(
-        contentType: 'image/jpeg',
-      );
-      
-      final uploadTask = ref.putData(bytes, metadata);
-      final snapshot = await uploadTask;
-      return await snapshot.ref.getDownloadURL();
-    } catch (e) {
-      print('Image upload error: $e');
-      return ''; // Return empty string on failure
-    }
+    final bytes = await file.readAsBytes();
+    final base64String = base64Encode(bytes);
+    return 'data:image/jpeg;base64,$base64String';
   }
 
   Future<String> createBook(Map<String, dynamic> data) async {

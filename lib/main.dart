@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'services/auth_service.dart';
 import 'providers/book_provider.dart';
 import 'providers/chat_provider.dart';
+import 'providers/notification_provider.dart';
+import 'widgets/notification_badge.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/signup_screen.dart';
 import 'screens/auth/verify_email_screen.dart';
@@ -36,6 +38,7 @@ class BookSwapApp extends StatelessWidget {
         Provider<AuthService>(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => BookProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -104,17 +107,31 @@ class _MainNavState extends State<MainNav> {
 
   @override
   Widget build(BuildContext context) {
+    final notifications = context.watch<NotificationProvider>();
+    
     return Scaffold(
       body: pages[idx],
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         currentIndex: idx,
-        onTap: (i) => setState(() => idx = i),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.library_books), label: 'My Listings'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat_bubble), label: 'Chats'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
+        onTap: (i) {
+          setState(() => idx = i);
+          if (i == 1) {
+            notifications.markIncomingAsRead();
+            notifications.markMyOffersAsRead();
+          }
+        },
+        items: [
+          const BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(
+            icon: NotificationBadge(
+              count: notifications.totalUnread,
+              child: const Icon(Icons.library_books),
+            ),
+            label: 'My Listings',
+          ),
+          const BottomNavigationBarItem(icon: Icon(Icons.chat_bubble), label: 'Chats'),
+          const BottomNavigationBarItem(icon: Icon(Icons.settings), label: 'Settings'),
         ],
       ),
     );

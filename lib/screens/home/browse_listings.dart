@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../providers/book_provider.dart';
+import '../../providers/notification_provider.dart';
 import '../../widgets/book_card.dart';
+import '../../widgets/notification_badge.dart';
 import '../home/post_book_screen.dart';
 
 class BrowseListings extends StatefulWidget {
@@ -26,7 +28,29 @@ class _BrowseListingsState extends State<BrowseListings> {
     }).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Browse Listings')),
+      appBar: AppBar(
+        title: const Text('Browse Listings'),
+        actions: [
+          Consumer<NotificationProvider>(
+            builder: (context, notifications, child) {
+              if (notifications.totalUnread == 0) return const SizedBox.shrink();
+              return Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: NotificationBadge(
+                  count: notifications.totalUnread,
+                  child: IconButton(
+                    icon: const Icon(Icons.notifications),
+                    onPressed: () {
+                      // Navigate to My Listings tab
+                      DefaultTabController.of(context)?.animateTo(1);
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(

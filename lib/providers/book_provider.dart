@@ -76,36 +76,28 @@ class BookProvider with ChangeNotifier {
     final user = _auth.currentUser;
     if (user == null) throw Exception('User not logged in');
     
-    // Create book immediately without image
-    final bookId = await _svc.createBook({
+    String imageUrl = '';
+    
+    // Upload image first if provided
+    if (image != null) {
+      try {
+        imageUrl = await _svc.uploadImage(image, user.uid);
+      } catch (e) {
+        // Continue without image
+      }
+    }
+    
+    // Create book with image URL
+    await _svc.createBook({
       'title': title,
       'author': author,
       'condition': condition,
       'swapFor': swapFor,
-      'imageUrl': '',
+      'imageUrl': imageUrl,
       'ownerId': user.uid,
       'ownerEmail': user.email ?? '',
       'status': '',
     });
-    
-    // Upload image in background and update book
-    if (image != null) {
-      _uploadImageAsync(bookId, image, user.uid);
-    }
-  }
-  
-  void _uploadImageAsync(String bookId, XFile image, String userId) async {
-    try {
-      final imageUrl = await _svc.uploadImage(image, userId);
-      if (imageUrl.isNotEmpty) {
-        await _svc.updateBook(bookId, {'imageUrl': imageUrl});
-        print('Image uploaded successfully for book: $bookId');
-      } else {
-        print('Image upload failed - empty URL returned');
-      }
-    } catch (e) {
-      print('Background image upload failed: $e');
-    }
   }
 
   Future<void> update({
@@ -118,11 +110,12 @@ class BookProvider with ChangeNotifier {
     String? currentImageUrl,
   }) async {
     String imageUrl = currentImageUrl ?? '';
+    
     if (image != null) {
       try {
         imageUrl = await _svc.uploadImage(image, _auth.currentUser!.uid);
       } catch (e) {
-        print('Image upload failed: $e');
+        // Keep current image URL if new upload fails
       }
     }
     

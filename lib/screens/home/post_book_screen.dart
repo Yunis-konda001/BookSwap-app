@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -39,9 +41,9 @@ class _PostBookScreenState extends State<PostBookScreen> {
     try {
       final image = await ImagePicker().pickImage(
         source: ImageSource.gallery,
-        maxWidth: 400,
-        maxHeight: 600,
-        imageQuality: 60,
+        maxWidth: 300,
+        maxHeight: 400,
+        imageQuality: 40,
       );
       if (image != null) {
         setState(() => _image = image);
@@ -97,10 +99,18 @@ class _PostBookScreenState extends State<PostBookScreen> {
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: kIsWeb
-                            ? Image.network(
-                                _image!.path,
-                                fit: BoxFit.cover,
-                                width: double.infinity,
+                            ? FutureBuilder<Uint8List>(
+                                future: _image!.readAsBytes(),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData) {
+                                    return Image.memory(
+                                      snapshot.data!,
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                    );
+                                  }
+                                  return const Center(child: CircularProgressIndicator());
+                                },
                               )
                             : Image.file(
                                 File(_image!.path),
@@ -111,11 +121,7 @@ class _PostBookScreenState extends State<PostBookScreen> {
                     : (widget.editing?.imageUrl.isNotEmpty == true)
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: Image.network(
-                              widget.editing!.imageUrl,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                            ),
+                            child: _buildEditingImage(widget.editing!.imageUrl),
                           )
                         : const Center(
                             child: Column(
@@ -171,16 +177,16 @@ class _PostBookScreenState extends State<PostBookScreen> {
                 }
               },
               child: _loading 
-                  ? const Row(
+                  ? Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        SizedBox(
+                        const SizedBox(
                           width: 16,
                           height: 16,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
-                        SizedBox(width: 8),
-                        Text('Posting...'),
+                        const SizedBox(width: 8),
+                        Text(_image != null ? 'Uploading image...' : 'Posting...'),
                       ],
                     )
                   : Text(editing == null ? 'Post' : 'Save'),
@@ -188,6 +194,23 @@ class _PostBookScreenState extends State<PostBookScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildEditingImage(String imageUrl) {
+    if (imageUrl.startsWith('data:image')) {
+      final base64String = imageUrl.split(',')[1];
+      final bytes = base64Decode(base64String);
+      return Image.memory(
+        bytes,
+        fit: BoxFit.cover,
+        width: double.infinity,
+      );
+    }
+    return Image.network(
+      imageUrl,
+      fit: BoxFit.cover,
+      width: double.infinity,
     );
   }
 
