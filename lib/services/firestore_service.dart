@@ -110,6 +110,57 @@ class FirestoreService {
   Stream<QuerySnapshot<Map<String, dynamic>>> getUserRatings(String userId) =>
       _db.collection('ratings').where('ratedUserId', isEqualTo: userId).snapshots();
 
+  // Clear all data for current user
+  Future<void> clearAllUserData(String userId) async {
+    final batch = _db.batch();
+    
+    // Delete user's books
+    final books = await _db.collection('books').where('ownerId', isEqualTo: userId).get();
+    for (final doc in books.docs) {
+      batch.delete(doc.reference);
+    }
+    
+    // Delete user's swaps
+    final sentSwaps = await _db.collection('swaps').where('senderId', isEqualTo: userId).get();
+    final receivedSwaps = await _db.collection('swaps').where('receiverId', isEqualTo: userId).get();
+    for (final doc in [...sentSwaps.docs, ...receivedSwaps.docs]) {
+      batch.delete(doc.reference);
+    }
+    
+    // Delete user's ratings
+    final ratings = await _db.collection('ratings').where('raterUserId', isEqualTo: userId).get();
+    for (final doc in ratings.docs) {
+      batch.delete(doc.reference);
+    }
+    
+    await batch.commit();
+  }
+
+  // Clear ALL data from database (all users)
+  Future<void> clearAllData() async {
+    final batch = _db.batch();
+    
+    // Delete all books
+    final books = await _db.collection('books').get();
+    for (final doc in books.docs) {
+      batch.delete(doc.reference);
+    }
+    
+    // Delete all swaps
+    final swaps = await _db.collection('swaps').get();
+    for (final doc in swaps.docs) {
+      batch.delete(doc.reference);
+    }
+    
+    // Delete all ratings
+    final ratings = await _db.collection('ratings').get();
+    for (final doc in ratings.docs) {
+      batch.delete(doc.reference);
+    }
+    
+    await batch.commit();
+  }
+
   // ---------- Chats ----------
   // chat id is deterministic between two users (sorted UIDs)
   String chatIdFor(String a, String b) {

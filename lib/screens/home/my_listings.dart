@@ -11,6 +11,36 @@ import 'post_book_screen.dart';
 class MyListings extends StatelessWidget {
   const MyListings({super.key});
 
+  void _showClearDataDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Clear Data'),
+        content: const Text('Choose what to clear:'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<BookProvider>().clearAllData();
+            },
+            child: const Text('My Data Only'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<BookProvider>().clearEntireDatabase();
+            },
+            child: const Text('Everything', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
   void _confirmDelete(BuildContext context, BookProvider prov, Book book) {
     showDialog(
       context: context,
@@ -43,6 +73,12 @@ class MyListings extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('My Listings'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.delete_sweep),
+              onPressed: () => _showClearDataDialog(context),
+            ),
+          ],
           bottom: TabBar(
             tabs: [
               const Tab(text: 'My Books'),
@@ -115,12 +151,26 @@ class MyListings extends StatelessWidget {
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         final offers = snapshot.data!.docs;
-        if (offers.isEmpty) return const Center(child: Text('No offers sent yet'));
+        if (offers.isEmpty) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.swap_horiz, size: 64, color: Colors.grey),
+                SizedBox(height: 16),
+                Text('No offers sent yet', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                SizedBox(height: 8),
+                Text('Browse books and request swaps!', style: TextStyle(color: Colors.grey)),
+              ],
+            ),
+          );
+        }
         return ListView.builder(
+          padding: const EdgeInsets.all(8),
           itemCount: offers.length,
           itemBuilder: (context, i) {
             final offer = offers[i].data();
-            return _buildOfferCard(context, offer, false);
+            return _buildSwapCard(context, offer, false, offers[i].id);
           },
         );
       },
@@ -134,140 +184,139 @@ class MyListings extends StatelessWidget {
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
         final offers = snapshot.data!.docs;
-        if (offers.isEmpty) return const Center(child: Text('No incoming offers'));
+        if (offers.isEmpty) {
+          return const Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.inbox, size: 64, color: Colors.grey),
+                SizedBox(height: 16),
+                Text('No incoming offers', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                SizedBox(height: 8),
+                Text('Post books to receive swap requests!', style: TextStyle(color: Colors.grey)),
+              ],
+            ),
+          );
+        }
         return ListView.builder(
+          padding: const EdgeInsets.all(8),
           itemCount: offers.length,
           itemBuilder: (context, i) {
             final offer = offers[i].data();
-            return _buildOfferCard(context, offer, true, offers[i].id);
+            return _buildSwapCard(context, offer, true, offers[i].id);
           },
         );
       },
     );
   }
 
-  Widget _buildOfferCard(BuildContext context, Map<String, dynamic> offer, bool isIncoming, [String? swapId]) {
+  Widget _buildSwapCard(BuildContext context, Map<String, dynamic> offer, bool isIncoming, String swapId) {
     final status = offer['status'] ?? 'Pending';
+    final bookId = offer['bookId'] ?? '';
+    
     return Card(
-      margin: const EdgeInsets.all(8),
-      child: ListTile(
-        title: Text('Book ID: ${offer['bookId']}'),
-        subtitle: Text('Status: $status'),
-        trailing: _buildTrailingWidget(context, offer, status, isIncoming, swapId),
-      ),
-    );
-  }
-
-  Widget _buildTrailingWidget(BuildContext context, Map<String, dynamic> offer, String status, bool isIncoming, String? swapId) {
-    if (isIncoming && status == 'Pending') {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.check, color: Colors.green),
-            onPressed: () => context.read<BookProvider>().acceptSwap(swapId!, offer['bookId']),
-          ),
-          IconButton(
-            icon: const Icon(Icons.close, color: Colors.red),
-            onPressed: () => context.read<BookProvider>().rejectSwap(swapId!, offer['bookId']),
-          ),
-        ],
-      );
-    }
-    
-    if (status == 'Accepted') {
-      return ElevatedButton(
-        onPressed: () => _showCompleteDialog(context, swapId!, offer),
-        child: const Text('Complete'),
-      );
-    }
-    
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: _getStatusColor(status),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        status,
-        style: const TextStyle(color: Colors.white, fontSize: 12),
-      ),
-    );
-  }
-
-  void _showCompleteDialog(BuildContext context, String swapId, Map<String, dynamic> offer) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Complete Swap'),
-        content: const Text('Mark this swap as completed and rate your swap partner?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.read<BookProvider>().completeSwap(swapId, offer['bookId']);
-              _showRatingDialog(context, offer['senderId'] ?? offer['receiverId']);
-            },
-            child: const Text('Complete'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showRatingDialog(BuildContext context, String userId) {
-    int rating = 5;
-    final commentController = TextEditingController();
-    
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Rate Swap Partner'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(5, (index) {
-                return IconButton(
-                  onPressed: () => rating = index + 1,
-                  icon: Icon(
-                    Icons.star,
-                    color: index < rating ? Colors.amber : Colors.grey,
+              children: [
+                Container(
+                  width: 60,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
                   ),
-                );
-              }),
+                  child: const Icon(Icons.menu_book, color: Colors.amber, size: 30),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isIncoming ? 'Swap Request Received' : 'Swap Request Sent',
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Book ID: ${bookId.length > 8 ? '${bookId.substring(0, 8)}...' : bookId}',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: _getStatusColor(status),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Text(
+                          status,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            TextField(
-              controller: commentController,
-              decoration: const InputDecoration(
-                hintText: 'Optional comment...',
-                border: OutlineInputBorder(),
+            if (isIncoming && status == 'Pending') ...[
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => context.read<BookProvider>().acceptSwap(swapId, offer['bookId']),
+                      icon: const Icon(Icons.check, size: 18),
+                      label: const Text('Accept'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => context.read<BookProvider>().rejectSwap(swapId, offer['bookId']),
+                      icon: const Icon(Icons.close, size: 18),
+                      label: const Text('Reject'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              maxLines: 3,
-            ),
+            ],
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Skip'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Implement rating submission
-            },
-            child: const Text('Submit'),
-          ),
-        ],
       ),
     );
   }
+
+
+
+
 
   Color _getStatusColor(String status) {
     switch (status) {
@@ -284,3 +333,4 @@ class MyListings extends StatelessWidget {
     }
   }
 }
+

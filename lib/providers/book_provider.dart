@@ -153,6 +153,24 @@ class BookProvider with ChangeNotifier {
     await _svc.completeSwap(swapId, bookId);
   }
 
+  Future<void> rateUser(String ratedUserId, int rating, String comment) async {
+    final currentUser = _auth.currentUser;
+    if (currentUser != null) {
+      await _svc.rateUser(ratedUserId, currentUser.uid, rating, comment);
+    }
+  }
+
+  Future<void> clearAllData() async {
+    final currentUser = _auth.currentUser;
+    if (currentUser != null) {
+      await _svc.clearAllUserData(currentUser.uid);
+    }
+  }
+
+  Future<void> clearEntireDatabase() async {
+    await _svc.clearAllData();
+  }
+
   Stream<QuerySnapshot<Map<String, dynamic>>> get myOffers {
     final uid = _auth.currentUser?.uid;
     return uid != null ? _svc.myOffers(uid) : const Stream.empty();
