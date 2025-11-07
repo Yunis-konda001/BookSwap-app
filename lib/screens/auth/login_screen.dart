@@ -61,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -108,9 +108,9 @@ class _LoginScreenState extends State<LoginScreen> {
               // Email Field
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withOpacity(0.2)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                 ),
                 child: TextField(
                   controller: _emailController,
@@ -130,9 +130,9 @@ class _LoginScreenState extends State<LoginScreen> {
               // Password Field
               Container(
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white.withOpacity(0.2)),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                 ),
                 child: TextField(
                   controller: _passwordController,

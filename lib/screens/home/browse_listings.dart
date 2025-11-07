@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../../providers/book_provider.dart';
 import '../../providers/notification_provider.dart';
@@ -42,7 +41,7 @@ class _BrowseListingsState extends State<BrowseListings> {
                     icon: const Icon(Icons.notifications),
                     onPressed: () {
                       // Navigate to My Listings tab
-                      DefaultTabController.of(context)?.animateTo(1);
+                      DefaultTabController.of(context).animateTo(1);
                     },
                   ),
                 ),

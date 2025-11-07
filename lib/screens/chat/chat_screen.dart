@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 import '../../providers/chat_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -201,7 +200,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 5,
                         offset: const Offset(0, 1),
                       ),

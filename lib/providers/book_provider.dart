@@ -45,16 +45,12 @@ class BookProvider with ChangeNotifier {
       // Sort by creation time if available
       _browse.sort((a, b) => b.id.compareTo(a.id));
       notifyListeners();
-    }, onError: (e) {
-      print('Error loading books: $e');
     });
 
     _mineSub = _svc.booksByOwner(uid).listen((s) {
       _mine = s.docs.map((d) => Book.fromDoc(d)).toList();
       _mine.sort((a, b) => b.id.compareTo(a.id));
       notifyListeners();
-    }, onError: (e) {
-      print('Error loading my books: $e');
     });
   }
 
@@ -135,10 +131,8 @@ class BookProvider with ChangeNotifier {
     final me = _auth.currentUser!;
     if (me.uid == book.ownerId) return;
     
-    print('Requesting swap for book: ${book.id}');
     await _svc.createSwap(bookId: book.id, senderId: me.uid, receiverId: book.ownerId);
     await _svc.ensureThread(me.uid, book.ownerId);
-    print('Swap request completed');
   }
 
   Future<void> acceptSwap(String swapId, String bookId) async {

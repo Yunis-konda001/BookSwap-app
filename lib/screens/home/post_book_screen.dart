@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -75,7 +74,7 @@ class _PostBookScreenState extends State<PostBookScreen> {
             TextFormField(controller: _swapFor, decoration: const InputDecoration(labelText: 'Swap For')),
             const SizedBox(height: 12),
             DropdownButtonFormField(
-              value: _condition,
+              initialValue: _condition,
               decoration: const InputDecoration(labelText: 'Condition'),
               items: const [
                 DropdownMenuItem(value: 'New', child: Text('New')),
@@ -140,6 +139,11 @@ class _PostBookScreenState extends State<PostBookScreen> {
               onPressed: _loading ? null : () async {
                 if (!_form.currentState!.validate()) return;
                 setState(() => _loading = true);
+                
+                // Capture context references before async operations
+                final messenger = ScaffoldMessenger.of(context);
+                final navigator = Navigator.of(context);
+                
                 try {
                   if (editing == null) {
                     await prov.create(
@@ -161,14 +165,14 @@ class _PostBookScreenState extends State<PostBookScreen> {
                     );
                   }
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       SnackBar(content: Text('Book ${editing == null ? 'posted' : 'updated'} successfully!')),
                     );
-                    Navigator.pop(context);
+                    navigator.pop();
                   }
                 } catch (e) {
                   if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
+                    messenger.showSnackBar(
                       SnackBar(content: Text('Error: $e')),
                     );
                   }
