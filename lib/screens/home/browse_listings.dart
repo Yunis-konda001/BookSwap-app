@@ -72,9 +72,40 @@ class _BrowseListingsState extends State<BrowseListings> {
               onChanged: (value) => setState(() => _searchQuery = value),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text('Found ${filteredBooks.length} books'),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.amber.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.amber.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.library_books,
+                  color: Colors.amber[700],
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '${filteredBooks.length} ${filteredBooks.length == 1 ? 'book' : 'books'} available',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.amber[800],
+                  ),
+                ),
+                if (_searchQuery.isNotEmpty) ...[
+                  const Spacer(),
+                  Icon(
+                    Icons.search,
+                    color: Colors.amber[600],
+                    size: 16,
+                  ),
+                ]
+              ],
+            ),
           ),
           Expanded(
             child: filteredBooks.isEmpty
