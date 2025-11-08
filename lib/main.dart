@@ -26,6 +26,7 @@ Future<void> main() async {
   runApp(const BookSwapApp());
 }
 
+// Main App Widget
 class BookSwapApp extends StatelessWidget {
   const BookSwapApp({super.key});
 
