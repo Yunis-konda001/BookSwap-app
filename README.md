@@ -187,6 +187,13 @@ Ideas for making the app better:
 - Look at [Firebase guides](https://firebase.google.com/docs)
 - Create an issue in this repository
 
+## Author
+
+**Kumi Yunis Konda**
+- Developer and Designer of BookSwap App
+- Flutter & Firebase Enthusiast
+- Contact: [Add your email or GitHub profile]
+
 ## License
 
 This project is open source. Feel free to use and modify it.
