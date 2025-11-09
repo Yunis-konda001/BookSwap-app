@@ -1,4 +1,4 @@
-# BookSwap App 📚
+# BookSwap App 
 
 A simple book trading app where people can swap books with each other. Built with Flutter and Firebase.
 
@@ -13,7 +13,12 @@ BookSwap lets you:
 
 ## Screenshots
 
-*Add screenshots of your app here when ready*
+<img width="335" height="715" alt="Screenshot 2025-11-07 222304" src="https://github.com/user-attachments/assets/5fb9a181-0bed-40f7-8f17-c886ddeea9b0" />
+<img width="334" height="709" alt="Screenshot 2025-11-07 221537" src="https://github.com/user-attachments/assets/327ba3cf-bb54-4dd2-b152-149b17caf0cc" />
+<img width="343" height="710" alt="Screenshot 2025-11-07 221515" src="https://github.com/user-attachments/assets/2f9e3e76-ca27-406f-bd53-d592421ece71" />
+<img width="326" height="720" alt="Screenshot 2025-11-07 221414" src="https://github.com/user-attachments/assets/cfee8414-2967-44eb-9f8c-fd86cb72fac8" />
+<img width="353" height="737" alt="Screenshot 2025-11-07 221333" src="https://github.com/user-attachments/assets/426a3f91-4269-4e0c-a720-6d6d53b7970d" />
+
 
 ## How to set up this app
 
@@ -199,5 +204,3 @@ Ideas for making the app better:
 This project is open source. Feel free to use and modify it.
 
 ---
-
-**Happy book swapping! 📖✨**
